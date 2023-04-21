@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "330827985359",
+    "project_id": "unrelo-23b2c",
+    "storage_bucket": "unrelo-23b2c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330827985359:android:f5bcd21468cdc0e5a762ba",
+        "android_client_info": {
+          "package_name": "com.example.unrelo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "330827985359-dcshnj7b2ebbit85i6uf27c0jgpi9u4u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr5zI7Rw8Y8LrTSW3BWYBpjVxGWr93jJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330827985359-dcshnj7b2ebbit85i6uf27c0jgpi9u4u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

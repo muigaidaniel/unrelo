@@ -24,7 +24,7 @@ class _ForecastChartState extends State<ForecastChart> {
   @override
   Widget build(BuildContext context) {
     return CustomContainer(
-      height: 35.h,
+      height: 33.h,
       child: Column(
         children: [
           SizedBox(
@@ -37,33 +37,37 @@ class _ForecastChartState extends State<ForecastChart> {
             child: SfCartesianChart(
               plotAreaBorderColor: Colors.transparent,
               tooltipBehavior: tooltipBehavior,
-              series: <ChartSeries<WeatherData, double>>[
-                StackedLineSeries<WeatherData, double>(
+              series: <ChartSeries<WeatherData, String>>[
+                StackedLineSeries<WeatherData, String>(
                   dataSource: weatherData,
                   markerSettings: const MarkerSettings(isVisible: true),
                   dataLabelSettings: const DataLabelSettings(
                       textStyle: TextStyle(color: Colors.white),
                       isVisible: true,
                       labelAlignment: ChartDataLabelAlignment.bottom),
+                  name: 'Temperature (°C)',
                   xValueMapper: (WeatherData weather, _) => weather.day,
                   yValueMapper: (WeatherData weather, _) => weather.temp,
                 ),
-                StackedLineSeries<WeatherData, double>(
+                StackedLineSeries<WeatherData, String>(
                   dataSource: weatherData,
                   markerSettings: const MarkerSettings(isVisible: true),
                   dataLabelSettings: const DataLabelSettings(
                       textStyle: TextStyle(color: Colors.white),
                       isVisible: true,
                       labelAlignment: ChartDataLabelAlignment.top),
+                  name: 'Humidity (%)',
                   xValueMapper: (WeatherData weather, _) => weather.day,
                   yValueMapper: (WeatherData weather, _) => weather.humidity,
                 )
               ],
-              primaryXAxis: NumericAxis(
+              legend: Legend(
+                  isVisible: true,
+                  position: LegendPosition.bottom,
+                  overflowMode: LegendItemOverflowMode.wrap,
+                  textStyle: const TextStyle(color: Colors.white)),
+              primaryXAxis: CategoryAxis(
                   edgeLabelPlacement: EdgeLabelPlacement.shift,
-                  minimum: 1,
-                  maximum: 5,
-                  interval: 1,
                   majorGridLines: const MajorGridLines(width: 0),
                   majorTickLines: const MajorTickLines(size: 0),
                   axisLine: const AxisLine(width: 0),
@@ -85,11 +89,11 @@ class _ForecastChartState extends State<ForecastChart> {
 
   List<WeatherData> getData() {
     final List<WeatherData> weatherData = [
-      WeatherData(29, 14, 1),
-      WeatherData(28, 18, 2),
-      WeatherData(24, 16, 3),
-      WeatherData(25, 17, 4),
-      WeatherData(23, 15, 5),
+      WeatherData(29, 14, 'Tue\n 12/2'),
+      WeatherData(28, 18, 'Wed\n 13/2'),
+      WeatherData(24, 16, 'Thur\n 14/2'),
+      WeatherData(25, 17, 'Fri\n 15/2'),
+      WeatherData(23, 15, 'Sat\n 16/2'),
     ];
     return weatherData;
   }
@@ -100,5 +104,5 @@ class WeatherData {
 
   final double temp;
   final double humidity;
-  final double day;
+  final String day;
 }

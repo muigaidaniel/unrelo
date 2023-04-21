@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:unrelo/ui/widgets/forecast_chart.dart';
 import 'package:unrelo/ui/widgets/statistics_chart.dart';
 
@@ -41,7 +40,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           body: SingleChildScrollView(
             child: Column(
-              children: const [StatisticsChart(), ForecastChart()],
+              children: [
+                Text('This year\'s statistics',
+                    style: TextStyle(color: Colors.white, fontSize: 12.sp)),
+                Text('Average: 20.5°C',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold)),
+                const StatisticsChart(),
+                SizedBox(height: 3.h),
+                const ForecastChart()
+              ],
             ),
           ),
         ));

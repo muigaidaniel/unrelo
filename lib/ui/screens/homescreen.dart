@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sizer/sizer.dart';
 import '../../models/cities.dart';
@@ -74,46 +75,89 @@ class HomeScreenState extends State<HomeScreen> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue[800]!,
-                  Colors.blue[600]!,
-                ],
-              ),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0B42AB),
             ),
-            height: 30.h,
+            height: 40.h,
             child: ListView(
               children: [
                 Text(city['city'],
                     style: Theme.of(context).textTheme.titleLarge),
-                SizedBox(height: 5.h),
-                Text('Longitude: ${city['lng']}',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                Text('Latitude: ${city['lat']}',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                SizedBox(height: 5.h),
+                SizedBox(height: 3.h),
+                Container(
+                  height: 5.h,
+                  //: Colors.red,
+                  margin: EdgeInsets.only(top: 5.sp),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Temperature 10°C',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      SizedBox(
+                          width: 20.sp,
+                          child: SvgPicture.asset('assets/images/sun.svg'))
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 5.h,
+                  //color: Colors.amber,
+                  margin: EdgeInsets.only(top: 5.sp),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Humidity 10%',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      SizedBox(
+                          width: 20.sp,
+                          child: SvgPicture.asset('assets/images/fog.svg'))
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 5.h,
+                  //color: Colors.green,
+                  margin: EdgeInsets.only(top: 5.sp),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Soil moisture 10%',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      SizedBox(
+                          width: 20.sp,
+                          child: SvgPicture.asset('assets/images/rain.svg'))
+                    ],
+                  ),
+                ),
+                // Text('Longitude: ${city['lng']}',
+                //     style: Theme.of(context).textTheme.bodyMedium),
+                // Text('Latitude: ${city['lat']}',
+                //     style: Theme.of(context).textTheme.bodyMedium),
+                SizedBox(height: 4.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Get more info about the area ...',
                         style: Theme.of(context).textTheme.bodyMedium),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => MoreInfo(city: city['city']),
-                          ),
-                        );
-                      },
-                      child: Text('More info',
-                          style:
-                              TextStyle(color: Colors.black, fontSize: 12.sp)),
-                    ),
+                    OutlinedButton(
+                        // style: ElevatedButton.styleFrom(
+                        //     backgroundColor: Colors.white),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  MoreInfo(city: city['city']),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                            side:
+                                const BorderSide(color: Colors.white, width: 1),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10))),
+                        child: Text('More info',
+                            style: TextStyle(
+                                fontSize: 12.sp, color: Colors.white))),
                   ],
                 ),
               ],

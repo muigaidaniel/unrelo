@@ -48,9 +48,10 @@ class MoreInfo extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 30.h,
-                    child: Image.asset('assets/images/rainsunny.png'),
+                  Container(
+                    margin: EdgeInsets.only(bottom: 2.h),
+                    height: 23.h,
+                    child: Image.asset('assets/images/rainsunny_2.png'),
                   ),
                   Text('28°C ',
                       style: TextStyle(
@@ -60,10 +61,7 @@ class MoreInfo extends StatelessWidget {
                   SizedBox(height: 1.h),
                   Text('Max: 28°C    Min 20°C',
                       style: TextStyle(fontSize: 12.sp)),
-                  CustomContainer(
-                    height: 8.h,
-                    child: const CurrentConditions(),
-                  ),
+                  const CurrentConditions(),
                   CustomContainer(
                       height: 22.h,
                       child: Column(

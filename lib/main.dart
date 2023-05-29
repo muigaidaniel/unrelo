@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
@@ -14,7 +15,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -27,10 +28,10 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: theme(),
         routes: {
-          '/': (context) => const SignupPage(),
+          '/': (context) => const SignInPage(),
           '/signup': (context) => const SignupPage(),
           '/signin': (context) => const SignInPage(),
-          '/home': (context) => const HomeScreen(),
+          '/home': (context) => const HomeScreen(sensors: []),
           '/statistics': (context) => const StatisticsScreen(),
         },
         initialRoute: '/',

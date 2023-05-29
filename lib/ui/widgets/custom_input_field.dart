@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 class CustomInputField extends StatelessWidget {
-  const CustomInputField({super.key, required this.label});
+  const CustomInputField(
+      {super.key,
+      required this.label,
+      required this.controller,
+      this.keybordType});
   final String label;
+  final TextInputType? keybordType;
+  final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 2.h),
       child: TextFormField(
+        keyboardType: keybordType,
+        controller: controller,
         style: Theme.of(context).textTheme.bodyMedium,
         cursorColor: Colors.white,
         decoration: InputDecoration(

@@ -1,14 +1,27 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:sizer/sizer.dart';
+import 'package:unrelo/ui/widgets/loading/loading_screen.dart';
+import '../../services/auth.dart';
+import '../../services/storage_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_input_field.dart';
+import '../widgets/custom_snackbar.dart';
+import 'homescreen.dart';
 
-class SignInPage extends StatelessWidget {
+class SignInPage extends HookWidget {
   const SignInPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    AuthService authService = AuthService();
+    final formKey = GlobalKey<FormState>();
+    final emailController = useTextEditingController();
+    final passwordController = useTextEditingController();
+
     return Scaffold(
       body: Container(
         height: 100.h,
@@ -31,17 +44,47 @@ class SignInPage extends StatelessWidget {
                 child: Text('Sign in',
                     style: Theme.of(context).textTheme.bodyLarge)),
             Form(
+              key: formKey,
               child: Column(
                 children: [
-                  CustomInputField(label: 'Email address'),
-                  CustomInputField(label: 'Password'),
+                  CustomInputField(
+                    label: 'Email address',
+                    controller: emailController,
+                    keybordType: TextInputType.emailAddress,
+                  ),
+                  CustomInputField(
+                    label: 'Password',
+                    controller: passwordController,
+                    keybordType: TextInputType.visiblePassword,
+                  ),
                 ],
               ),
             ),
             CustomButton(
                 buttonText: 'Sign in',
-                onPressed: () {
-                  Navigator.popAndPushNamed(context, '/home');
+                onPressed: () async {
+                  LoadingScreen.instance()
+                      .show(context: context, text: 'Signing in');
+                  var signupres = await authService.signInWithEmailAndPassword(
+                    emailController.text.trim(),
+                    passwordController.text.trim(),
+                  );
+                  List<Map<String, dynamic>> sensors =
+                      await StorageService().fetchSensorList();
+                  LoadingScreen.instance().hide();
+                  if (signupres != null) {
+                    CustomSnackbarWidget()
+                        .showErrorSnackBar(context, signupres);
+                    return;
+                  } else {
+                    CustomSnackbarWidget()
+                        .showSuccessSnackBar(context, 'Sign in successful');
+                    //Navigator.popAndPushNamed(context, '/home');
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => HomeScreen(
+                              sensors: sensors,
+                            )));
+                  }
                 }),
             SizedBox(height: 3.h),
             TextButton(

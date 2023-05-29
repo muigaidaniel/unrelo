@@ -1,47 +1,96 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sizer/sizer.dart';
-import '../../models/cities.dart';
 import 'more_info.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key, required this.sensors}) : super(key: key);
+
+  final List<Map<String, dynamic>> sensors;
 
   @override
   State<HomeScreen> createState() => HomeScreenState();
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  GoogleMapController? _mapController;
+  Position? _userPosition;
+  String? selectedSensor = 'Select Sensor';
+
+  @override
+  void initState() {
+    super.initState();
+    requestLocationPermission();
+  }
+
+  Future<void> requestLocationPermission() async {
+    PermissionStatus status = await Permission.location.request();
+
+    if (status.isGranted) {
+      fetchUserLocation();
+    }
+  }
+
+  Future<void> fetchUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      setState(() {
+        _userPosition = position;
+      });
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLng(
+          LatLng(position.latitude, position.longitude),
+        ),
+      );
+    } catch (error) {
+      log(error.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(alignment: Alignment.topCenter, children: [
         GoogleMap(
+          onMapCreated: (GoogleMapController controller) {
+            _mapController = controller;
+            log(widget.sensors.toString());
+          },
           mapType: MapType.normal,
-          initialCameraPosition: const CameraPosition(
-            target: LatLng(-1.286389, 36.817223),
+          myLocationEnabled: true,
+          myLocationButtonEnabled: true,
+          zoomControlsEnabled: true,
+          initialCameraPosition: CameraPosition(
+            target: _userPosition != null
+                ? LatLng(_userPosition!.latitude, _userPosition!.longitude)
+                : const LatLng(-1.2864, 36.8172),
             zoom: 10.0,
           ),
           markers: Set.from(
-            cities.map(
-              (city) => Marker(
-                markerId: MarkerId('${city['city']}}'),
-                position: LatLng(
-                    double.parse(city['lat']!), double.parse(city['lng']!)),
-                onTap: () => _showBottomSheet(context, city),
+            widget.sensors.map(
+              (sensor) => Marker(
+                markerId: MarkerId('${sensor['sensorId']}}'),
+                position: LatLng(sensor['latitude']!, sensor['latitude']!),
+                onTap: () => _showBottomSheet(context, sensor),
               ),
             ),
           ),
         ),
         Container(
           width: 80.w,
-          height: 5.h,
+          height: 6.h,
           margin: EdgeInsets.only(top: 7.h),
+          padding: EdgeInsets.symmetric(horizontal: 3.w),
+
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
@@ -54,11 +103,67 @@ class HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          child: Center(
-              child: Text(
-            '${cities.length} sensors found',
-            style: TextStyle(fontSize: 11.sp, color: Colors.black),
-          )),
+          child: Row(
+            children: [
+              Icon(
+                Icons.pin_drop,
+                size: 15.sp,
+              ),
+              Expanded(
+                child: DropdownButton(
+                  underline: const SizedBox(),
+                  isExpanded: true,
+                  alignment: Alignment.center,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  selectedItemBuilder: (BuildContext context) {
+                    return widget.sensors.map<Widget>((dynamic item) {
+                      return Center(
+                        child: Text(
+                          item['sensorName'],
+                          textAlign: TextAlign.center,
+                          style:
+                              TextStyle(fontSize: 11.sp, color: Colors.black),
+                        ),
+                      );
+                    }).toList();
+                  },
+                  value: widget.sensors[1]['sensorName'],
+                  items: widget.sensors
+                      .map(
+                        (sensor) => DropdownMenuItem(
+                          value: sensor['sensorName'],
+                          child: Text(
+                            sensor['sensorName'],
+                            textAlign: TextAlign.center,
+                            style:
+                                TextStyle(fontSize: 11.sp, color: Colors.black),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedSensor = value.toString();
+                      for (var sensor in widget.sensors) {
+                        if (sensor['sensorName'] == value) {
+                          _mapController!.animateCamera(
+                            CameraUpdate.newLatLng(
+                              LatLng(sensor['latitude']!, sensor['longitude']!),
+                            ),
+                          );
+                        }
+                      }
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          // child: Center(
+          //     child: Text(
+          //   '${widget.sensors.length} sensors found',
+          //   style: TextStyle(fontSize: 11.sp, color: Colors.black),
+          // )),
         ),
       ]),
     );
@@ -81,7 +186,7 @@ class HomeScreenState extends State<HomeScreen> {
             height: 40.h,
             child: ListView(
               children: [
-                Text(city['city'],
+                Text(city['sensorName'],
                     style: Theme.of(context).textTheme.titleLarge),
                 SizedBox(height: 3.h),
                 Container(
@@ -129,10 +234,6 @@ class HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                // Text('Longitude: ${city['lng']}',
-                //     style: Theme.of(context).textTheme.bodyMedium),
-                // Text('Latitude: ${city['lat']}',
-                //     style: Theme.of(context).textTheme.bodyMedium),
                 SizedBox(height: 4.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

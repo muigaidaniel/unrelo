@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
@@ -73,13 +74,13 @@ class HomeScreenState extends State<HomeScreen> {
             target: _userPosition != null
                 ? LatLng(_userPosition!.latitude, _userPosition!.longitude)
                 : const LatLng(-1.2864, 36.8172),
-            zoom: 10.0,
+            zoom: 8.0,
           ),
           markers: Set.from(
             widget.sensors.map(
               (sensor) => Marker(
                 markerId: MarkerId('${sensor['sensorId']}}'),
-                position: LatLng(sensor['latitude']!, sensor['latitude']!),
+                position: LatLng(sensor['latitude']!, sensor['longitude']!),
                 onTap: () => _showBottomSheet(context, sensor),
               ),
             ),
@@ -90,7 +91,6 @@ class HomeScreenState extends State<HomeScreen> {
           height: 6.h,
           margin: EdgeInsets.only(top: 7.h),
           padding: EdgeInsets.symmetric(horizontal: 3.w),
-
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
@@ -159,17 +159,12 @@ class HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          // child: Center(
-          //     child: Text(
-          //   '${widget.sensors.length} sensors found',
-          //   style: TextStyle(fontSize: 11.sp, color: Colors.black),
-          // )),
         ),
       ]),
     );
   }
 
-  void _showBottomSheet(BuildContext context, Map<String, dynamic> city) {
+  void _showBottomSheet(BuildContext context, Map<String, dynamic> sensor) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -183,86 +178,107 @@ class HomeScreenState extends State<HomeScreen> {
             decoration: const BoxDecoration(
               color: Color(0xFF0B42AB),
             ),
-            height: 40.h,
-            child: ListView(
-              children: [
-                Text(city['sensorName'],
-                    style: Theme.of(context).textTheme.titleLarge),
-                SizedBox(height: 3.h),
-                Container(
-                  height: 5.h,
-                  //: Colors.red,
-                  margin: EdgeInsets.only(top: 5.sp),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            height: 35.h,
+            child: FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('readings')
+                    .where('sensorId', isEqualTo: int.parse(sensor['sensorId']))
+                    .orderBy('timestampUtc', descending: true)
+                    .limit(1)
+                    .get()
+                    .then((querySnapshot) => querySnapshot.docs.first),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+
+                  if (!snapshot.hasData) {
+                    return const Center(child: Text('No data available'));
+                  }
+                  Map<String, dynamic> latestReading =
+                      snapshot.data!.data() as Map<String, dynamic>;
+                  double humidity = double.parse(latestReading['avgHumidity']
+                          .toString()
+                          .substring(0, 5)) *
+                      100;
+                  return ListView(
                     children: [
-                      Text('Temperature 10°C',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      SizedBox(
-                          width: 20.sp,
-                          child: SvgPicture.asset('assets/images/sun.svg'))
+                      Text(sensor['sensorName'],
+                          style: Theme.of(context).textTheme.titleLarge),
+                      SizedBox(height: 3.h),
+                      Container(
+                        height: 5.h,
+                        margin: EdgeInsets.only(top: 5.sp),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                                'Temperature ${latestReading['avgTemp'].toString().substring(0, 5)} °C',
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            SizedBox(
+                                width: 20.sp,
+                                child:
+                                    SvgPicture.asset('assets/images/sun.svg'))
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 5.h,
+                        //color: Colors.amber,
+                        margin: EdgeInsets.only(top: 5.sp),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Humidity $humidity%',
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            SizedBox(
+                                width: 20.sp,
+                                child:
+                                    SvgPicture.asset('assets/images/fog.svg'))
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Time ${latestReading['timestampUtc']}',
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium),
+                              Text('Get more info about the area ...',
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium),
+                            ],
+                          ),
+                          OutlinedButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MoreInfo(prev: sensor),
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                      color: Colors.white, width: 1),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10))),
+                              child: Text('More info',
+                                  style: TextStyle(
+                                      fontSize: 12.sp, color: Colors.white))),
+                        ],
+                      ),
                     ],
-                  ),
-                ),
-                Container(
-                  height: 5.h,
-                  //color: Colors.amber,
-                  margin: EdgeInsets.only(top: 5.sp),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Humidity 10%',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      SizedBox(
-                          width: 20.sp,
-                          child: SvgPicture.asset('assets/images/fog.svg'))
-                    ],
-                  ),
-                ),
-                Container(
-                  height: 5.h,
-                  //color: Colors.green,
-                  margin: EdgeInsets.only(top: 5.sp),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Soil moisture 10%',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      SizedBox(
-                          width: 20.sp,
-                          child: SvgPicture.asset('assets/images/rain.svg'))
-                    ],
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Get more info about the area ...',
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    OutlinedButton(
-                        // style: ElevatedButton.styleFrom(
-                        //     backgroundColor: Colors.white),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  MoreInfo(city: city['city']),
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                            side:
-                                const BorderSide(color: Colors.white, width: 1),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        child: Text('More info',
-                            style: TextStyle(
-                                fontSize: 12.sp, color: Colors.white))),
-                  ],
-                ),
-              ],
-            ),
+                  );
+                }),
           ),
         );
       },

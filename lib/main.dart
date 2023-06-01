@@ -8,8 +8,6 @@ import 'package:unrelo/ui/screens/homescreen.dart';
 import 'package:unrelo/ui/screens/login.dart';
 import 'package:unrelo/ui/screens/signup.dart';
 
-import 'ui/screens/statistics_screen.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -32,7 +30,6 @@ class MyApp extends StatelessWidget {
           '/signup': (context) => const SignupPage(),
           '/signin': (context) => const SignInPage(),
           '/home': (context) => const HomeScreen(sensors: []),
-          '/statistics': (context) => const StatisticsScreen(),
         },
         initialRoute: '/',
         debugShowCheckedModeBanner: false,

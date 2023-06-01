@@ -89,6 +89,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  dio:
+    dependency: "direct main"
+    description:
+      name: dio
+      sha256: "347d56c26d63519552ef9a569f2a593dda99a81fdbdff13c584b7197cfe05059"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.2"
   fake_async:
     dependency: transitive
     description:
@@ -109,18 +117,18 @@ packages:
     dependency: transitive
     description:
       name: firebase_auth_platform_interface
-      sha256: c645fec50b0391aa878288f58fa4fe9762c271380c457aedf5c7c9b718604f68
+      sha256: "63fd67d125ae483722ff3742953e2e06bbc1e6cb3da68e5f7f4430d5f82f9373"
       url: "https://pub.dev"
     source: hosted
-    version: "6.11.11"
+    version: "6.15.1"
   firebase_auth_web:
     dependency: transitive
     description:
       name: firebase_auth_web
-      sha256: "2dcf2a36852b9091741b4a4047a02e1f2c43a62c6cacec7df573a793a6543e6d"
+      sha256: "241a4ecce80da2014e3cd93d7b7e1a66e9b683e4241d466d73676ac90599b805"
       url: "https://pub.dev"
     source: hosted
-    version: "5.2.8"
+    version: "5.5.1"
   firebase_core:
     dependency: "direct main"
     description:
@@ -313,13 +321,13 @@ packages:
     source: hosted
     version: "4.0.2"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
-      sha256: "910f85bce16fb5c6f614e117efa303e85a1731bb0081edf3604a2ae6e9a3cc91"
+      sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.17.0"
+    version: "0.18.1"
   js:
     dependency: transitive
     description:

@@ -4,7 +4,9 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:unrelo/ui/widgets/custom_container.dart';
 
 class ForecastChart extends StatefulWidget {
-  const ForecastChart({super.key});
+  const ForecastChart({super.key, required this.predictions});
+
+  final List predictions;
 
   @override
   State<ForecastChart> createState() => _ForecastChartState();
@@ -75,9 +77,6 @@ class _ForecastChartState extends State<ForecastChart> {
                   labelStyle: const TextStyle(color: Colors.white)),
               primaryYAxis: NumericAxis(
                   edgeLabelPlacement: EdgeLabelPlacement.shift,
-                  minimum: 10,
-                  maximum: 60,
-                  interval: 10,
                   majorGridLines: const MajorGridLines(width: 0),
                   isVisible: false),
             ),
@@ -89,11 +88,11 @@ class _ForecastChartState extends State<ForecastChart> {
 
   List<WeatherData> getData() {
     final List<WeatherData> weatherData = [
-      WeatherData(29, 14, 'Tue\n 12/2'),
-      WeatherData(28, 18, 'Wed\n 13/2'),
-      WeatherData(24, 16, 'Thur\n 14/2'),
-      WeatherData(25, 17, 'Fri\n 15/2'),
-      WeatherData(23, 15, 'Sat\n 16/2'),
+      WeatherData(26, 80, 'Tue'),
+      WeatherData(32, 79, 'Wed'),
+      WeatherData(23, 67, 'Thur'),
+      WeatherData(25, 72, 'Fri'),
+      WeatherData(29, 82, 'Sat'),
     ];
     return weatherData;
   }

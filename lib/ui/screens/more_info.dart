@@ -1,16 +1,17 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
+import 'package:unrelo/ui/screens/statistics_screen.dart';
 import 'package:unrelo/ui/widgets/current_conditions.dart';
 import 'package:unrelo/ui/widgets/custom_container.dart';
 import 'package:unrelo/ui/widgets/daily_weather_card.dart';
 import 'package:unrelo/ui/widgets/hourly_weather_card.dart';
 
 class MoreInfo extends StatelessWidget {
-  const MoreInfo({super.key, required this.prev});
+  const MoreInfo({super.key, required this.prev, required this.predictions});
   final Map<String, dynamic> prev;
+  final List predictions;
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +76,44 @@ class MoreInfo extends StatelessWidget {
                     .map((DocumentSnapshot doc) =>
                         doc.data() as Map<String, dynamic>)
                     .toList();
+
+                List<Map<String, dynamic>> lastFiveRecords =
+                    readingsDataList.reversed.toList();
+                List<HourlyCard> hourlyCards = lastFiveRecords.map((record) {
+                  double temperature = record['avgTemp'];
+                  double humidity = record['avgHumidity'] * 100;
+                  String time =
+                      record['timestampUtc'].toString().substring(11, 16);
+                  String icon = 'sunnycloudy';
+
+                  return HourlyCard(
+                    temperature: '${temperature.toString().split('.')[0]}°C',
+                    humidity: '${humidity.toString().substring(0, 2)} %',
+                    time: time,
+                    icon: icon,
+                  );
+                }).toList();
+                double maxTemp = double.negativeInfinity;
+                double minTemp = double.infinity;
+
+                for (var readingData in readingsDataList) {
+                  double avgTemp = readingData['avgTemp'];
+
+                  if (avgTemp > maxTemp) {
+                    maxTemp = avgTemp;
+                  }
+
+                  if (avgTemp < minTemp) {
+                    minTemp = avgTemp;
+                  }
+                }
                 Map<String, dynamic> lastData = readingsDataList[0];
 
                 double humidity = double.parse(
                         lastData['avgHumidity'].toString().substring(0, 5)) *
                     100;
+                DateTime dateTime = DateTime.parse(lastData['timestampUtc']);
+                String today = DateFormat('MMM, d').format(dateTime);
 
                 return Center(
                   child: SingleChildScrollView(
@@ -92,22 +126,23 @@ class MoreInfo extends StatelessWidget {
                           child: Image.asset('assets/images/rainsunny_2.png'),
                         ),
                         Text(
-                            '${lastData['avgTemp'].toString().substring(0, 5)} °C',
+                            '${lastData['avgTemp'].toString().split('.')[0]}°C',
                             //'${prev['avgTemp'].toString().substring(0, 5)} °C',
                             style: TextStyle(
                                 fontSize: 30.sp, fontWeight: FontWeight.bold)),
                         SizedBox(height: 1.h),
                         Text('Temperature', style: TextStyle(fontSize: 12.sp)),
                         SizedBox(height: 1.h),
-                        Text('Max: 28°C    Min 20°C',
+                        Text(
+                            'Max: ${maxTemp.toString().split('.')[0]} °C    Min ${minTemp.toString().split('.')[0]} °C',
                             style: TextStyle(fontSize: 12.sp)),
                         GestureDetector(
                           onTap: () {
-                            log(readingsDataList.toString());
+                            print(predictions);
                           },
                           child: CurrentConditions(
                             temperature:
-                                lastData['avgTemp'].toString().substring(0, 5),
+                                lastData['avgTemp'].toString().substring(0, 4),
                             humidity: humidity.toString(),
                           ),
                         ),
@@ -130,41 +165,23 @@ class MoreInfo extends StatelessWidget {
                                                 fontSize: 14.sp,
                                                 fontWeight: FontWeight.bold)),
                                       ),
-                                      Text('Mar, 9',
+                                      Text(today,
                                           style: TextStyle(fontSize: 14.sp)),
                                     ],
                                   ),
                                 ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    HourlyCard(
-                                      temperature: '29°C',
-                                      time: '15.00',
-                                      icon: 'sunnycloudy',
-                                    ),
-                                    HourlyCard(
-                                      temperature: '26°C',
-                                      time: '16.00',
-                                      icon: 'cloudy',
-                                    ),
-                                    HourlyCard(
-                                      temperature: '24°C',
-                                      time: '17.00',
-                                      icon: 'sunnycloudy',
-                                    ),
-                                    HourlyCard(
-                                      temperature: '23°C',
-                                      time: '18.00',
-                                      icon: 'cloudy',
-                                    ),
-                                    HourlyCard(
-                                      temperature: '28°C',
-                                      time: '19.00',
-                                      icon: 'cloudynight',
-                                    )
-                                  ],
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      for (var i = 0;
+                                          i < hourlyCards.length;
+                                          i++)
+                                        hourlyCards[i],
+                                    ],
+                                  ),
                                 )
                               ],
                             )),
@@ -182,8 +199,12 @@ class MoreInfo extends StatelessWidget {
                                           fontSize: 14.sp,
                                           fontWeight: FontWeight.bold)),
                                   OutlinedButton(
-                                      onPressed: () => Navigator.pushNamed(
-                                          context, '/statistics'),
+                                      onPressed: () => Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  StatisticsScreen(
+                                                      predictions: predictions,
+                                                      dailyData: prev))),
                                       style: OutlinedButton.styleFrom(
                                           side: const BorderSide(
                                               color: Colors.white, width: 1),
@@ -198,37 +219,30 @@ class MoreInfo extends StatelessWidget {
                               ),
                               SizedBox(height: 1.h),
                               SizedBox(
-                                height: 16.h,
-                                child: ListView(
-                                  children: const [
-                                    DailyCard(
-                                        day: 'Monday',
-                                        icon: 'sunnycloudy',
-                                        temp: '13°C',
-                                        humidity: '20%'),
-                                    DailyCard(
-                                        day: 'Tuesday',
-                                        icon: 'sunnycloudy',
-                                        temp: '13°C',
-                                        humidity: '20%'),
-                                    DailyCard(
-                                        day: 'Wednesday',
-                                        icon: 'sunnycloudy',
-                                        temp: '13°C',
-                                        humidity: '20%'),
-                                    DailyCard(
-                                        day: 'Thursday',
-                                        icon: 'sunnycloudy',
-                                        temp: '13°C',
-                                        humidity: '20%'),
-                                    DailyCard(
-                                        day: 'Friday',
-                                        icon: 'sunnycloudy',
-                                        temp: '13°C',
-                                        humidity: '20%'),
-                                  ],
-                                ),
-                              )
+                                  height: 16.h,
+                                  child: ListView.builder(
+                                    itemCount: predictions.length,
+                                    itemBuilder: (context, index) {
+                                      Map<String, dynamic> data =
+                                          predictions[index];
+                                      String day = getDayOfWeek(index + 1);
+                                      String icon = 'sunnycloudy';
+                                      String temp = data["avg_temp"]
+                                          .toString()
+                                          .split('.')[0];
+                                      String humidity =
+                                          (data["avg_humidity"] * 100)
+                                              .toString()
+                                              .split('.')[0];
+
+                                      return DailyCard(
+                                        day: day,
+                                        icon: icon,
+                                        temp: '$temp °C',
+                                        humidity: '$humidity %',
+                                      );
+                                    },
+                                  ))
                             ],
                           ),
                         )
@@ -238,5 +252,26 @@ class MoreInfo extends StatelessWidget {
                 );
               }),
         ));
+  }
+
+  String getDayOfWeek(int dayIndex) {
+    switch (dayIndex) {
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return '';
+    }
   }
 }

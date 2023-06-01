@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sizer/sizer.dart';
+import '../../services/http_services.dart';
 import 'more_info.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -73,7 +75,7 @@ class HomeScreenState extends State<HomeScreen> {
           initialCameraPosition: CameraPosition(
             target: _userPosition != null
                 ? LatLng(_userPosition!.latitude, _userPosition!.longitude)
-                : const LatLng(-1.2864, 36.8172),
+                : const LatLng(0.3500, 37.5833),
             zoom: 8.0,
           ),
           markers: Set.from(
@@ -258,11 +260,29 @@ class HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                           OutlinedButton(
-                              onPressed: () {
+                              onPressed: () async {
+                                DateTime tomorrow =
+                                    DateTime.now().add(const Duration(days: 1));
+                                String tomorrowString =
+                                    DateFormat('yyyy-MM-dd').format(tomorrow);
+                                DateTime fiveDaysFromNow =
+                                    DateTime.now().add(const Duration(days: 5));
+                                String fiveDaysFromNowString =
+                                    DateFormat('yyyy-MM-dd')
+                                        .format(fiveDaysFromNow);
+                                dynamic predictions = await HttpService().post({
+                                  "start_date": tomorrowString,
+                                  "end_date": "$fiveDaysFromNowString 23:00",
+                                  "sensor_id": 3
+                                });
+                                List<dynamic> dataList =
+                                    predictions.values.toList();
+                                List firstFiveDays = dataList.sublist(0, 5);
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        MoreInfo(prev: sensor),
+                                    builder: (context) => MoreInfo(
+                                        prev: sensor,
+                                        predictions: firstFiveDays),
                                   ),
                                 );
                               },

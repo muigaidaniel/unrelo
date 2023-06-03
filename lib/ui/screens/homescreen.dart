@@ -273,7 +273,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 dynamic predictions = await HttpService().post({
                                   "start_date": tomorrowString,
                                   "end_date": "$fiveDaysFromNowString 23:00",
-                                  "sensor_id": 3
+                                  "sensor_id": int.parse(sensor['sensorId'])
                                 });
                                 List<dynamic> dataList =
                                     predictions.values.toList();

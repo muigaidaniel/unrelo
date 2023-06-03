@@ -18,7 +18,7 @@ class _ForecastChartState extends State<ForecastChart> {
 
   @override
   void initState() {
-    weatherData = getData();
+    weatherData = getData(widget.predictions);
     tooltipBehavior = TooltipBehavior(enable: true);
     super.initState();
   }
@@ -86,22 +86,26 @@ class _ForecastChartState extends State<ForecastChart> {
     );
   }
 
-  List<WeatherData> getData() {
-    final List<WeatherData> weatherData = [
-      WeatherData(26, 80, 'Tue'),
-      WeatherData(32, 79, 'Wed'),
-      WeatherData(23, 67, 'Thur'),
-      WeatherData(25, 72, 'Fri'),
-      WeatherData(29, 82, 'Sat'),
-    ];
-    return weatherData;
+  List<WeatherData> getData(predictions) {
+    List<WeatherData> weatherDataList = [];
+    for (int i = 0; i < predictions.length; i++) {
+      var data = predictions[i];
+      int temperature = data['avg_temp'].round();
+      int humidity = (data['avg_humidity'] * 100).round();
+      int index = i + 1;
+
+      WeatherData weatherData =
+          WeatherData(temperature, humidity, "Day $index");
+      weatherDataList.add(weatherData);
+    }
+    return weatherDataList;
   }
 }
 
 class WeatherData {
   WeatherData(this.temp, this.humidity, this.day);
 
-  final double temp;
-  final double humidity;
+  final int temp;
+  final int humidity;
   final String day;
 }
